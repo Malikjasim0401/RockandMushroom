@@ -1,0 +1,45 @@
+rules_version = '2';
+
+// Everything lives under the signed-in user's uid; nothing is shared between users.
+// Collections are allow-listed: anything not matched below is denied.
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+
+      match /sightings/{sightingId} {
+        allow read, write: if isOwner(uid);
+      }
+
+      // Distinct-species markers for speciesCount (DECISIONS.md D2).
+      match /species/{speciesId} {
+        allow read, write: if isOwner(uid);
+      }
+
+      // Bird ID requests, processed by the identifyBird trigger (DECISIONS.md D15). Clients
+      // create a pending request for their own upload and read the outcome; only the function
+      // writes status, result and error.
+      match /identifications/{requestId} {
+        allow read, delete: if isOwner(uid);
+        allow create: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['imagePath', 'status', 'createdAt'])
+          && request.resource.data.keys().hasAll(['imagePath', 'status', 'createdAt'])
+          && request.resource.data.status == 'pending'
+          && request.resource.data.imagePath == 'users/' + uid + '/uploads/' + requestId + '.jpg'
+          && request.resource.data.createdAt == request.time;
+        allow update: if false;
+      }
+
+      // Rate-limit counter (users/{uid}/meta/usage). Written only by identifyBird through the
+      // Admin SDK, so users can't reset their own daily limit (DECISIONS.md D1).
+      match /meta/{doc} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+    }
+  }
+}

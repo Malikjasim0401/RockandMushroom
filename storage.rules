@@ -1,0 +1,19 @@
+rules_version = '2';
+
+// The brief's intent: owner-only access, and uploads must be images under 5 MB.
+// Split by operation because the brief's single `read, write` rule, which checks
+// `request.resource == null`, denies owners' reads in production (DECISIONS.md D17).
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /users/{uid}/{all=**} {
+      function isOwner() {
+        return request.auth != null && request.auth.uid == uid;
+      }
+
+      allow read, delete: if isOwner();
+      allow create, update: if isOwner()
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
