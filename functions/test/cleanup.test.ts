@@ -12,25 +12,25 @@ describe.skipIf(!hasEmulators)('deleteUserData (emulators)', () => {
   const bucket = () => getStorage().bucket();
 
   const seed = async (uid: string) => {
-    await db().doc(`users/${uid}`).set({ displayName: uid, speciesCount: 2 });
-    await db().doc(`users/${uid}/sightings/s1`).set({ species: 'Robin' });
-    await db().doc(`users/${uid}/species/turdus-migratorius`).set({ n: 1 });
-    await db().doc(`users/${uid}/meta/usage`).set({ day: 'x', count: 3 });
-    await db().doc(`users/${uid}/identifications/r1`).set({ status: 'done' });
-    await bucket().file(`users/${uid}/sightings/s1.jpg`).save(JPEG);
-    await bucket().file(`users/${uid}/uploads/u1.jpg`).save(JPEG);
+    await db().doc(`rockmushroom/${uid}`).set({ displayName: uid, speciesCount: 2 });
+    await db().doc(`rockmushroom/${uid}/sightings/s1`).set({ species: 'Robin' });
+    await db().doc(`rockmushroom/${uid}/species/turdus-migratorius`).set({ n: 1 });
+    await db().doc(`rockmushroom/${uid}/meta/usage`).set({ day: 'x', count: 3 });
+    await db().doc(`rockmushroom/${uid}/identifications/r1`).set({ status: 'done' });
+    await bucket().file(`rockmushroom/${uid}/sightings/s1.jpg`).save(JPEG);
+    await bucket().file(`rockmushroom/${uid}/uploads/u1.jpg`).save(JPEG);
   };
 
   const countDocs = async (uid: string) => {
     const paths = ['sightings', 'species', 'meta', 'identifications'];
     const sizes = await Promise.all(
-      paths.map(async (p) => (await db().collection(`users/${uid}/${p}`).get()).size),
+      paths.map(async (p) => (await db().collection(`rockmushroom/${uid}/${p}`).get()).size),
     );
-    const profile = (await db().doc(`users/${uid}`).get()).exists ? 1 : 0;
+    const profile = (await db().doc(`rockmushroom/${uid}`).get()).exists ? 1 : 0;
     return profile + sizes.reduce((a, b) => a + b, 0);
   };
   const countFiles = async (uid: string) =>
-    (await bucket().getFiles({ prefix: `users/${uid}/` }))[0].length;
+    (await bucket().getFiles({ prefix: `rockmushroom/${uid}/` }))[0].length;
 
   beforeAll(() => {
     initializeApp({ projectId: PROJECT_ID, storageBucket: BUCKET });

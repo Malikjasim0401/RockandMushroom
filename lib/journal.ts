@@ -27,7 +27,7 @@ function update(patch: Partial<JournalState>) {
 }
 
 function attach(uid: string) {
-  const findsQuery = query(collection(db, 'users', uid, 'sightings'), orderBy('seenAt', 'desc'));
+  const findsQuery = query(collection(db, 'rockmushroom', uid, 'sightings'), orderBy('seenAt', 'desc'));
   const stopFinds = onSnapshot(
     findsQuery,
     (snap) =>
@@ -38,7 +38,7 @@ function attach(uid: string) {
     () => update({ status: 'error' }),
   );
   const stopProfile = onSnapshot(
-    doc(db, 'users', uid),
+    doc(db, 'rockmushroom', uid),
     (snap) => update({ typeCount: num(snap.get('speciesCount')) }),
     // A missing or unreadable profile just leaves the count at 0.
     () => {},

@@ -44,52 +44,52 @@ describe.skipIf(!hasEmulators)('security rules', () => {
 
     it('lets a user manage their own profile, sightings and species', async () => {
       const db = alice().firestore();
-      await assertSucceeds(setDoc(doc(db, 'users/alice'), { displayName: 'Alice' }));
-      await assertSucceeds(getDoc(doc(db, 'users/alice')));
-      await assertSucceeds(setDoc(doc(db, 'users/alice/sightings/s1'), sighting));
-      await assertSucceeds(getDoc(doc(db, 'users/alice/sightings/s1')));
-      await assertSucceeds(setDoc(doc(db, 'users/alice/species/spinus-tristis'), { n: 1 }));
-      await assertSucceeds(deleteDoc(doc(db, 'users/alice/sightings/s1')));
+      await assertSucceeds(setDoc(doc(db, 'rockmushroom/alice'), { displayName: 'Alice' }));
+      await assertSucceeds(getDoc(doc(db, 'rockmushroom/alice')));
+      await assertSucceeds(setDoc(doc(db, 'rockmushroom/alice/sightings/s1'), sighting));
+      await assertSucceeds(getDoc(doc(db, 'rockmushroom/alice/sightings/s1')));
+      await assertSucceeds(setDoc(doc(db, 'rockmushroom/alice/species/spinus-tristis'), { n: 1 }));
+      await assertSucceeds(deleteDoc(doc(db, 'rockmushroom/alice/sightings/s1')));
     });
 
     it("blocks reading or writing another user's data", async () => {
       await env.withSecurityRulesDisabled(async (ctx) => {
-        await setDoc(doc(ctx.firestore(), 'users/alice'), { displayName: 'Alice' });
-        await setDoc(doc(ctx.firestore(), 'users/alice/sightings/s1'), sighting);
+        await setDoc(doc(ctx.firestore(), 'rockmushroom/alice'), { displayName: 'Alice' });
+        await setDoc(doc(ctx.firestore(), 'rockmushroom/alice/sightings/s1'), sighting);
       });
       const db = bob().firestore();
-      await assertFails(getDoc(doc(db, 'users/alice')));
-      await assertFails(getDoc(doc(db, 'users/alice/sightings/s1')));
-      await assertFails(setDoc(doc(db, 'users/alice/sightings/s2'), sighting));
-      await assertFails(setDoc(doc(db, 'users/alice'), { speciesCount: 999 }));
+      await assertFails(getDoc(doc(db, 'rockmushroom/alice')));
+      await assertFails(getDoc(doc(db, 'rockmushroom/alice/sightings/s1')));
+      await assertFails(setDoc(doc(db, 'rockmushroom/alice/sightings/s2'), sighting));
+      await assertFails(setDoc(doc(db, 'rockmushroom/alice'), { speciesCount: 999 }));
     });
 
     it('blocks signed-out access', async () => {
       const db = guest().firestore();
-      await assertFails(getDoc(doc(db, 'users/alice')));
-      await assertFails(setDoc(doc(db, 'users/alice/sightings/s1'), sighting));
+      await assertFails(getDoc(doc(db, 'rockmushroom/alice')));
+      await assertFails(setDoc(doc(db, 'rockmushroom/alice/sightings/s1'), sighting));
     });
 
     it('denies collections that are not allow-listed', async () => {
-      await assertFails(setDoc(doc(alice().firestore(), 'users/alice/secrets/x'), { a: 1 }));
+      await assertFails(setDoc(doc(alice().firestore(), 'rockmushroom/alice/secrets/x'), { a: 1 }));
     });
 
     it('lets users read but never write their rate-limit counter', async () => {
       await env.withSecurityRulesDisabled(async (ctx) => {
-        await setDoc(doc(ctx.firestore(), 'users/alice/meta/usage'), { day: 'x', count: 50 });
+        await setDoc(doc(ctx.firestore(), 'rockmushroom/alice/meta/usage'), { day: 'x', count: 50 });
       });
       const db = alice().firestore();
-      await assertSucceeds(getDoc(doc(db, 'users/alice/meta/usage')));
-      await assertFails(setDoc(doc(db, 'users/alice/meta/usage'), { day: 'x', count: 0 }));
-      await assertFails(deleteDoc(doc(db, 'users/alice/meta/usage')));
-      await assertFails(setDoc(doc(db, 'users/alice/meta/other'), { a: 1 }));
-      await assertFails(getDoc(doc(bob().firestore(), 'users/alice/meta/usage')));
+      await assertSucceeds(getDoc(doc(db, 'rockmushroom/alice/meta/usage')));
+      await assertFails(setDoc(doc(db, 'rockmushroom/alice/meta/usage'), { day: 'x', count: 0 }));
+      await assertFails(deleteDoc(doc(db, 'rockmushroom/alice/meta/usage')));
+      await assertFails(setDoc(doc(db, 'rockmushroom/alice/meta/other'), { a: 1 }));
+      await assertFails(getDoc(doc(bob().firestore(), 'rockmushroom/alice/meta/usage')));
     });
 
     describe('identification requests', () => {
-      const path = 'users/alice/identifications/r1';
+      const path = 'rockmushroom/alice/identifications/r1';
       const valid = () => ({
-        imagePath: 'users/alice/uploads/r1.jpg',
+        imagePath: 'rockmushroom/alice/uploads/r1.jpg',
         status: 'pending',
         createdAt: serverTimestamp(),
       });
@@ -113,10 +113,10 @@ describe.skipIf(!hasEmulators)('security rules', () => {
       it("rejects another request's upload, another user's upload, and traversal", async () => {
         const db = alice().firestore();
         const r = doc(db, path);
-        await assertFails(setDoc(r, { ...valid(), imagePath: 'users/alice/uploads/r2.jpg' }));
-        await assertFails(setDoc(r, { ...valid(), imagePath: 'users/bob/uploads/r1.jpg' }));
+        await assertFails(setDoc(r, { ...valid(), imagePath: 'rockmushroom/alice/uploads/r2.jpg' }));
+        await assertFails(setDoc(r, { ...valid(), imagePath: 'rockmushroom/bob/uploads/r1.jpg' }));
         await assertFails(
-          setDoc(r, { ...valid(), imagePath: 'users/alice/uploads/../../bob/uploads/r1.jpg' }),
+          setDoc(r, { ...valid(), imagePath: 'rockmushroom/alice/uploads/../../bob/uploads/r1.jpg' }),
         );
       });
 
@@ -142,38 +142,66 @@ describe.skipIf(!hasEmulators)('security rules', () => {
 
     it('lets a user upload, read and delete their own images', async () => {
       const storage = alice().storage();
-      const upload = ref(storage, 'users/alice/uploads/u1.jpg');
+      const upload = ref(storage, 'rockmushroom/alice/uploads/u1.jpg');
       await assertSucceeds(uploadBytes(upload, jpeg, asJpeg));
       await assertSucceeds(getBytes(upload));
       await assertSucceeds(deleteObject(upload));
-      await assertSucceeds(uploadBytes(ref(storage, 'users/alice/sightings/s1.jpg'), jpeg, asJpeg));
+      await assertSucceeds(uploadBytes(ref(storage, 'rockmushroom/alice/sightings/s1.jpg'), jpeg, asJpeg));
     });
 
     it("blocks another user's uploads and reads", async () => {
       await assertSucceeds(
-        uploadBytes(ref(alice().storage(), 'users/alice/sightings/s1.jpg'), jpeg, asJpeg),
+        uploadBytes(ref(alice().storage(), 'rockmushroom/alice/sightings/s1.jpg'), jpeg, asJpeg),
       );
       const storage = bob().storage();
-      await assertFails(getBytes(ref(storage, 'users/alice/sightings/s1.jpg')));
-      await assertFails(uploadBytes(ref(storage, 'users/alice/uploads/u1.jpg'), jpeg, asJpeg));
-      await assertFails(deleteObject(ref(storage, 'users/alice/sightings/s1.jpg')));
+      await assertFails(getBytes(ref(storage, 'rockmushroom/alice/sightings/s1.jpg')));
+      await assertFails(uploadBytes(ref(storage, 'rockmushroom/alice/uploads/u1.jpg'), jpeg, asJpeg));
+      await assertFails(deleteObject(ref(storage, 'rockmushroom/alice/sightings/s1.jpg')));
     });
 
     it('blocks signed-out uploads', async () => {
       await assertFails(
-        uploadBytes(ref(guest().storage(), 'users/alice/uploads/u1.jpg'), jpeg, asJpeg),
+        uploadBytes(ref(guest().storage(), 'rockmushroom/alice/uploads/u1.jpg'), jpeg, asJpeg),
       );
     });
 
     it('rejects non-images and files of 5 MB or more', async () => {
       const storage = alice().storage();
       await assertFails(
-        uploadBytes(ref(storage, 'users/alice/uploads/u1.jpg'), jpeg, {
+        uploadBytes(ref(storage, 'rockmushroom/alice/uploads/u1.jpg'), jpeg, {
           contentType: 'text/plain',
         }),
       );
       const big = new Uint8Array(5 * 1024 * 1024);
-      await assertFails(uploadBytes(ref(storage, 'users/alice/uploads/u2.jpg'), big, asJpeg));
+      await assertFails(uploadBytes(ref(storage, 'rockmushroom/alice/uploads/u2.jpg'), big, asJpeg));
+    });
+  });
+
+  // Both apps deploy one project-wide ruleset (the `users/` blocks are Birdify's, copied
+  // verbatim), so a change here must never take Birdify's paths away.
+  describe("Birdify's paths stay allowed", () => {
+    const birdRequest = () => ({
+      imagePath: 'users/alice/uploads/r1.jpg',
+      status: 'pending',
+      createdAt: serverTimestamp(),
+    });
+
+    it('keeps its Firestore profile, journal and bird scan request working', async () => {
+      const db = alice().firestore();
+      await assertSucceeds(setDoc(doc(db, 'users/alice'), { displayName: 'Alice' }));
+      await assertSucceeds(setDoc(doc(db, 'users/alice/sightings/s1'), { species: 'Robin' }));
+      await assertSucceeds(
+        setDoc(doc(db, 'users/alice/birdIdentifications/r1'), birdRequest()),
+      );
+      await assertFails(getDoc(doc(bob().firestore(), 'users/alice')));
+      // Rock & Mushroom's old shared path stays closed.
+      await assertFails(setDoc(doc(db, 'users/alice/identifications/r1'), birdRequest()));
+    });
+
+    it('keeps its Storage uploads working', async () => {
+      const upload = ref(alice().storage(), 'users/alice/uploads/u1.jpg');
+      await assertSucceeds(uploadBytes(upload, new Uint8Array(JPEG), { contentType: 'image/jpeg' }));
+      await assertFails(getBytes(ref(bob().storage(), 'users/alice/uploads/u1.jpg')));
     });
   });
 });

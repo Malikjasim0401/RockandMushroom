@@ -20,10 +20,10 @@ service cloud.firestore {
         allow read, write: if isOwner(uid);
       }
 
-      // Bird ID requests, processed by the identifyBird trigger (DECISIONS.md D15). Clients
+      // Bird ID requests, processed by the birdifyIdentify trigger (DECISIONS.md D15). Clients
       // create a pending request for their own upload and read the outcome; only the function
       // writes status, result and error.
-      match /identifications/{requestId} {
+      match /birdIdentifications/{requestId} {
         allow read, delete: if isOwner(uid);
         allow create: if isOwner(uid)
           && request.resource.data.keys().hasOnly(['imagePath', 'status', 'createdAt'])
@@ -34,8 +34,46 @@ service cloud.firestore {
         allow update: if false;
       }
 
-      // Rate-limit counter (users/{uid}/meta/usage). Written only by identifyBird through the
+      // Rate-limit counter (users/{uid}/meta/usage). Written only by birdifyIdentify through the
       // Admin SDK, so users can't reset their own daily limit (DECISIONS.md D1).
+      match /meta/{doc} {
+        allow read: if isOwner(uid);
+        allow write: if false;
+      }
+    }
+
+    // Rock & Mushroom, a separate app in this project, keeps all of its data under
+    // `rockmushroom/{uid}`, so it never shares a path with Birdify's `users/{uid}`.
+    // The `users/` block above is Birdify's, copied verbatim: both apps deploy to this one
+    // project-wide ruleset, so a deploy from either repo must carry both blocks.
+    match /rockmushroom/{uid} {
+      allow read, write: if isOwner(uid);
+
+      match /sightings/{sightingId} {
+        allow read, write: if isOwner(uid);
+      }
+
+      // Distinct-specimen markers for the specimen count.
+      match /species/{speciesId} {
+        allow read, write: if isOwner(uid);
+      }
+
+      // Identification requests, processed by the identifyRockMushroom trigger. Clients
+      // create a pending request for their own upload and read the outcome; only the function
+      // writes status, result and error.
+      match /identifications/{requestId} {
+        allow read, delete: if isOwner(uid);
+        allow create: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['imagePath', 'status', 'createdAt'])
+          && request.resource.data.keys().hasAll(['imagePath', 'status', 'createdAt'])
+          && request.resource.data.status == 'pending'
+          && request.resource.data.imagePath == 'rockmushroom/' + uid + '/uploads/' + requestId + '.jpg'
+          && request.resource.data.createdAt == request.time;
+        allow update: if false;
+      }
+
+      // Rate-limit counter (rockmushroom/{uid}/meta/usage). Written only by identifyRockMushroom
+      // through the Admin SDK, so users can't reset their own daily limit.
       match /meta/{doc} {
         allow read: if isOwner(uid);
         allow write: if false;

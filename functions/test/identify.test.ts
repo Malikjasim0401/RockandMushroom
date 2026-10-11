@@ -57,8 +57,8 @@ describe.skipIf(!hasEmulators)('processIdentification (emulators)', () => {
 
   beforeEach(async () => {
     identify = vi.fn<IdentifyImage>().mockResolvedValue(RESULT);
-    await db().recursiveDelete(db().doc(`users/${uid}`));
-    await bucket().deleteFiles({ prefix: 'users/' });
+    await db().recursiveDelete(db().doc(`rockmushroom/${uid}`));
+    await bucket().deleteFiles({ prefix: 'rockmushroom/' });
   });
 
   it('identifies, stores the result, counts the call and deletes the upload', async () => {

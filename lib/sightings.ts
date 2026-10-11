@@ -22,7 +22,7 @@ export class SaveError extends Error {
   override name = 'SaveError';
 }
 
-const sightingsPath = (uid: string) => `users/${uid}/sightings`;
+const sightingsPath = (uid: string) => `rockmushroom/${uid}/sightings`;
 
 /**
  * Doc id for the distinct-specimen marker (DECISIONS.md D2): "Amanita muscaria" →
@@ -90,8 +90,8 @@ export async function saveSighting(
     throw new SaveError("Couldn't upload the photo. Check your connection and try again.");
   }
 
-  const userRef = doc(db, 'users', uid);
-  const speciesRef = doc(db, 'users', uid, 'species', speciesKey(result.scientificName));
+  const userRef = doc(db, 'rockmushroom', uid);
+  const speciesRef = doc(db, 'rockmushroom', uid, 'species', speciesKey(result.scientificName));
 
   try {
     await runTransaction(db, async (tx) => {

@@ -10,7 +10,7 @@ import { type AuthUser } from './types';
  */
 export async function ensureUserProfile(user: AuthUser): Promise<void> {
   try {
-    const ref = doc(db, 'users', user.uid);
+    const ref = doc(db, 'rockmushroom', user.uid);
     const snap = await getDoc(ref);
     if (snap.exists()) return;
     await setDoc(ref, {

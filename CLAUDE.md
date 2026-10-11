@@ -75,8 +75,11 @@ before using one from memory.
   `npm run typecheck`, `npm run lint`, `npm run format`, `npm run doctor`
 - Functions: `npm run functions:build`, `npm run functions:test` (unit, rules and handler tests on
   the emulators; needs Java 21), `npm run emulators`
-- Deploy backend: `npm run deploy:backend`
-  (`firebase deploy --only functions,firestore:rules,firestore:indexes,storage`)
+- Deploy backend: `npm run deploy:backend` (only the `rockandmushroom` functions codebase), and
+  `npm run deploy:rules` for Firestore and Storage rules. The project is shared with Birdify and
+  has one ruleset per service, so `firestore.rules` and `storage.rules` carry Birdify's `users/`
+  blocks verbatim next to ours (D24). Never deploy rules or indexes from the Birdify repo, and keep
+  the `users/` blocks identical to Birdify's.
 - Functions runtime is Node 22 (D13). Import v2 APIs from `firebase-functions/firestore`,
   `/https`, `/params`, `/options` and `/logger`.
 - `identifyBird` is a **Firestore trigger**, not a callable (D15). The org's Domain Restricted

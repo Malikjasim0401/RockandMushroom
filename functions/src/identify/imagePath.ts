@@ -4,7 +4,7 @@ import { HttpsError } from 'firebase-functions/https';
 // nested paths, which a plain prefix check would let through.
 const FILE_NAME = /^[A-Za-z0-9_-]{1,64}\.jpg$/;
 
-export const uploadPrefix = (uid: string) => `users/${uid}/uploads/`;
+export const uploadPrefix = (uid: string) => `rockmushroom/${uid}/uploads/`;
 export const uploadPath = (uid: string, id: string) => `${uploadPrefix(uid)}${id}.jpg`;
 
 /**

@@ -21,4 +21,4 @@ export type IdentificationDoc = {
 };
 
 export const requestPath = (uid: string, requestId: string) =>
-  `users/${uid}/identifications/${requestId}`;
+  `rockmushroom/${uid}/identifications/${requestId}`;

@@ -20,9 +20,9 @@ const identify: IdentifyImage = (jpeg) =>
  * the public invoker a callable needs (docs/DECISIONS.md D15). Eventarc invokes this with the
  * project's own service account.
  */
-export const identifyBird = onDocumentCreated(
+export const identifyRockMushroom = onDocumentCreated(
   {
-    document: 'users/{uid}/identifications/{requestId}',
+    document: 'rockmushroom/{uid}/identifications/{requestId}',
     secrets: [openaiApiKey],
     timeoutSeconds: 60,
     memory: '512MiB',

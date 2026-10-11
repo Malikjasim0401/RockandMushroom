@@ -10,7 +10,7 @@ import { deleteUserData } from './account/cleanup';
  * The runtime account is set explicitly: v1 defaults to the App Engine service account, which
  * has no roles in this org (D16). RUNTIME_SERVICE_ACCOUNT names the one that does.
  */
-export const cleanupUser = functionsV1
+export const cleanupRockMushroomUser =functionsV1
   .runWith({
     serviceAccount: runtimeServiceAccount,
     timeoutSeconds: 120,

@@ -63,25 +63,25 @@ describe('parseImagePath', () => {
 
   it('accepts the upload that matches the request', () => {
     expect(
-      parseImagePath({ imagePath: 'users/alice/uploads/abc-123_X.jpg' }, uid, 'abc-123_X'),
-    ).toBe('users/alice/uploads/abc-123_X.jpg');
+      parseImagePath({ imagePath: 'rockmushroom/alice/uploads/abc-123_X.jpg' }, uid, 'abc-123_X'),
+    ).toBe('rockmushroom/alice/uploads/abc-123_X.jpg');
   });
 
   it('rejects other users’ paths', () => {
-    expect(check('users/bob/uploads/abc-123_X.jpg')).toBe('permission-denied');
-    expect(check('users/alice2/uploads/abc-123_X.jpg')).toBe('permission-denied');
-    expect(check('users/alice/sightings/abc-123_X.jpg')).toBe('permission-denied');
+    expect(check('rockmushroom/bob/uploads/abc-123_X.jpg')).toBe('permission-denied');
+    expect(check('rockmushroom/alice2/uploads/abc-123_X.jpg')).toBe('permission-denied');
+    expect(check('rockmushroom/alice/sightings/abc-123_X.jpg')).toBe('permission-denied');
   });
 
   it('rejects an upload that belongs to a different request', () => {
-    expect(check('users/alice/uploads/other.jpg')).toBe('invalid-argument');
+    expect(check('rockmushroom/alice/uploads/other.jpg')).toBe('invalid-argument');
   });
 
   it('rejects traversal, nesting and bad names', () => {
-    expect(check('users/alice/uploads/../../bob/uploads/a.jpg', 'a')).toBe('invalid-argument');
-    expect(check('users/alice/uploads/nested/a.jpg', 'a')).toBe('invalid-argument');
-    expect(check('users/alice/uploads/a.png', 'a')).toBe('invalid-argument');
-    expect(check('users/alice/uploads/.jpg', '')).toBe('invalid-argument');
+    expect(check('rockmushroom/alice/uploads/../../bob/uploads/a.jpg', 'a')).toBe('invalid-argument');
+    expect(check('rockmushroom/alice/uploads/nested/a.jpg', 'a')).toBe('invalid-argument');
+    expect(check('rockmushroom/alice/uploads/a.png', 'a')).toBe('invalid-argument');
+    expect(check('rockmushroom/alice/uploads/.jpg', '')).toBe('invalid-argument');
   });
 
   it('rejects missing or non-string input', () => {

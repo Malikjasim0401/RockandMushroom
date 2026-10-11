@@ -29,6 +29,7 @@ Only the project owner changes a status.
 | D21 | In-app account deletion (App Store requirement) | Proposed — implemented in Phase 7 |
 | D22 | Rebrand Birdify → RockAndMushroom (rocks, minerals, mushrooms) | Proposed — implemented in Phase 8 |
 | D23 | Collection features, redesigned Home/Detail, psychoactive verdict | Proposed — owner asked for it in chat; implemented in Phase 8 |
+| D24 | Separate `rockmushroom/` data, functions and rules inside the shared Birdify project | Proposed — owner asked for it in chat; deployed 2026-10-11 |
 
 ---
 
@@ -330,3 +331,22 @@ All of it is client-side except one schema value; nothing is deployed by this ch
    model can return it; the app already reads it, and unknown values fall back to `unknown`.
 6. **Not included, needs approval:** GPS tag and origin map. They need `expo-location`, a map
    library, new permission strings, and privacy-policy and store-form changes.
+
+### D24 — Separate RockAndMushroom data inside the shared Birdify project
+**Requested by the owner in chat (2026-10-10):** both apps use one Firebase project (Auth, default
+Firestore database, Storage bucket, `OPENAI_API_KEY`), but Birdify must not change. Supersedes
+D22 item 5 (paths and the `identifyBird` name stay).
+
+1. **Data:** everything this app owns moves from `users/{uid}/…` to `rockmushroom/{uid}/…` in
+   Firestore (profile, `sightings`, `species`, `identifications`, `meta/usage`) and Storage.
+   Finds saved earlier under `users/{uid}/sightings` are no longer read (no migration).
+2. **Functions:** `identifyRockMushroom` (trigger on `rockmushroom/{uid}/identifications/{requestId}`)
+   and `cleanupRockMushroomUser`, in their own codebase `rockandmushroom`, so deploying them cannot
+   delete Birdify's `default` codebase. The old `identifyBird` stays live and unused by this app.
+3. **Rules:** a project has one ruleset per service, so `firestore.rules` and `storage.rules`
+   contain Birdify's `users/` blocks copied verbatim plus the `rockmushroom/` blocks. Deploy only
+   from this repo (`npm run deploy:rules`); a rules deploy from the Birdify repo would remove the
+   `rockmushroom/` blocks and every scan would fail with permission-denied.
+4. **Known limits:** the Auth user pool is shared, so deleting an account in either app also fires
+   Birdify's `cleanupUser`, which erases that person's Birdify data. Hard isolation needs a named
+   Firestore database and a second Storage bucket, or a separate Firebase project (not done).

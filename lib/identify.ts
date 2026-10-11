@@ -131,8 +131,8 @@ export async function identifyPhoto(
 ): Promise<IdentifyResult> {
   await assertOnline();
 
-  const requestRef = doc(collection(db, 'users', uid, 'identifications'));
-  const imagePath = `users/${uid}/uploads/${requestRef.id}.jpg`;
+  const requestRef = doc(collection(db, 'rockmushroom', uid, 'identifications'));
+  const imagePath = `rockmushroom/${uid}/uploads/${requestRef.id}.jpg`;
   // Our own controller also stops the listener if the upload fails first.
   const controller = new AbortController();
   const abort = () => controller.abort();

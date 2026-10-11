@@ -14,7 +14,8 @@
     "functions:build": "npm --prefix functions run build",
     "functions:test": "npm --prefix functions run test:emulators",
     "emulators": "npm --prefix functions run build && firebase emulators:start",
-    "deploy:backend": "firebase deploy --only functions,firestore:rules,firestore:indexes,storage"
+    "deploy:backend": "firebase deploy --only functions:rockandmushroom",
+    "deploy:rules": "firebase deploy --only firestore:rules,storage"
   },
   "dependencies": {
     "@expo-google-fonts/fraunces": "^0.4.1",
